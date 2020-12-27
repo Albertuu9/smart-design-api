@@ -2,11 +2,14 @@ const express = require('express')
 const app = express()
 const platform = require('./app/settings/settings')
 const mongoose = require('mongoose')
-const session = require('express-session');
-const bodyParser = require('body-parser');
+const session = require('express-session')
+const bodyParser = require('body-parser')
+const cors = require('cors')
 
 // middlewares
 app.use(express.json())
+
+app.use(cors())
 
 app.use(session({
   secret: 'agfinformatique',

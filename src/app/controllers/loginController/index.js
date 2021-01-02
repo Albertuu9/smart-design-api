@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken')
 const platform = require('./../../settings/settings')
+const crypto = require('crypto')
 // utils
 const utilDate = require('../../util/utilDate')
 const utilPassword = require('../../util/utilPassword')
@@ -9,11 +10,21 @@ const User = require('../../models/user');
 const mailController = require('../mailController/index')
 
 function checkUserExists(req, res) {
-    User.find({ email: req.body.email }).then((user) => {
+    User.find({ email: req.body.email },{creationDate: 0, lastUpdate: 0}).then((user) => {
         utilPassword.decryptPassword(req.body.password, user[0].password).then((userExists) => {
             if (userExists) {
                 const token = generateToken();
-                res.json({ 'code': 200, token: token, userHash: user[0]._id })
+                let userResponse = {
+                    _id: user[0]._id,
+                    name: user[0].name,
+                    surname: user[0].surname,
+                    country: user[0].country,
+                    email: user[0].email,
+                    userType: user[0].userType,
+                    isPremium: user[0].isPremium,
+                    role: user[0].role
+                }
+                res.json({ 'code': 200, token: token, user: userResponse })
             } else {
                 res.json({ 'code': 500 })
             }
@@ -23,6 +34,18 @@ function checkUserExists(req, res) {
     }).catch((error) => {
         console.log(error)
     })
+}
+
+function loginGuest(req, res) {
+    const token = generateToken()
+    let hash = generateGuestHash()
+    let user = {
+        _id: hash,
+        name: 'Invitado',
+        isPremium: false,
+        avatar: generateRandomAvatar()
+    }
+    res.json({ 'code': 200, token: token, user: user })
 }
 
 function checkCodeExists(req, res) {
@@ -35,14 +58,30 @@ function checkCodeExists(req, res) {
 
 function checkMailExists(req, res) {
     User.find({ email: req.body.email }).then((user) => {
-        console.log(user);
-        if (user && user.length > 0) {
+        if (user && user.length === 0) {
             res.json({ 'code': 200 })
         } else {
             res.json({ 'code': 500 })
         }
     })
 }
+
+function checkTokenIsValid(req, res) {
+    const token = req.body.token
+ 
+    if (token) {
+      jwt.verify(token, platform.settings.secret, (err, decoded) => {      
+        if (err) {
+          res.json({code: 400, message: 'token not valid'});    
+        } else {
+          req.decoded = decoded;    
+          res.json({code: 200, decoded: decoded});
+        }
+      });
+    } else {
+      res.json({code: 500, message: 'token doesn\'t exists'})
+    }
+ }
 
 function updatePassword(req, res) {
     const newPassword = req.body.password
@@ -87,6 +126,7 @@ function saveNewUser(req, res) {
     const avatar = req.body.avatar
     const userType = req.body.userType
     const isPremium = false
+    const role = 1;
     const creationDate = utilDate.getCurrentDate()
     const lastUpdate = utilDate.getCurrentDate()
 
@@ -107,12 +147,13 @@ function saveNewUser(req, res) {
             avatar,
             userType,
             isPremium,
+            role,
             creationDate,
             lastUpdate
         });
 
-        user.updateOne().then((result) => {
-            res.json({ code: 200, data: result })
+        user.save().then((result) => {
+            res.json({ code: 200})
         }).catch((error) => {
             res.json({ code: 400, message: error })
         })
@@ -125,14 +166,35 @@ function generateCode() {
     return code
 }
 
+function generateRandomAvatar(){
+    let avatars = ['https://i.ibb.co/fQWWKmt/guest1.png',
+        'https://i.ibb.co/bX6RRts/guest2.png',
+        'https://i.ibb.co/DVCzFyR/guest3.png',
+        'https://i.ibb.co/svSXp9K/guest4.png',
+        'https://i.ibb.co/ww8dQqQ/guest5.png',
+        'https://i.ibb.co/XxMyTMm/guest6.png',
+        'https://i.ibb.co/Gkf0xT9/guest7.png',
+        'https://i.ibb.co/5FcJQ21/guest8.png']
+    let random = Math.floor(Math.random() * (avatars.length - 0));
+    return avatars[random];
+    
+}
+
+function generateGuestHash(){
+    let current_date = (new Date()).valueOf().toString()
+    let random = Math.random().toString()
+    let result = crypto.createHash('sha1').update(current_date + random).digest('hex')
+    return result
+}
+
 function generateToken() {
     const payload = {
         check: true
     };
     const token = jwt.sign(payload, platform.settings.secret, {
-        expiresIn: 1440
+        expiresIn: '48h'
     });
     return token
 }
 
-module.exports = { checkUserExists, saveNewUser, sendRecoverPasswordCode, checkCodeExists, updatePassword, checkMailExists }
+module.exports = { checkUserExists, saveNewUser, sendRecoverPasswordCode, checkCodeExists, updatePassword, checkMailExists, loginGuest, checkTokenIsValid }

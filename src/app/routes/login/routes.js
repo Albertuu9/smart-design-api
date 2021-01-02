@@ -7,6 +7,8 @@ module.exports = (function() {
 
     loginRoutes.post('/login', loginController.checkUserExists);
 
+    loginRoutes.post('/loginGuest', loginController.loginGuest);
+
     loginRoutes.post('/saveNewUser', loginController.saveNewUser);
 
     loginRoutes.post('/sendRecoverPasswordCode', loginController.sendRecoverPasswordCode);
@@ -16,6 +18,8 @@ module.exports = (function() {
     loginRoutes.post('/changePassword', loginController.updatePassword);
 
     loginRoutes.post('/checkMail', loginController.checkMailExists);
+
+    loginRoutes.post('/checkToken', loginController.checkTokenIsValid);
 
     return loginRoutes;
 })();

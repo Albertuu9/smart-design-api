@@ -33,6 +33,11 @@ const userSchema = new Schema({
         type: Boolean,
         required: false
     },
+    // 0 premium, 1 standard, 2 guest
+    role: {
+        type: Number,
+        required: false
+    },
     creationDate: {
         type: String,
         required: false

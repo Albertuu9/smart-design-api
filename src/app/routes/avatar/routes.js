@@ -7,7 +7,9 @@ module.exports = (function() {
     'use strict';
     var avatarRoutes = require('express').Router();
 
-    avatarRoutes.post('/loadAvatars', loginMiddlewares.validateToken, avatarsController.loadAvatars);
+    // avatarRoutes.post('/loadAvatars', loginMiddlewares.validateToken, avatarsController.loadAvatars);
+
+    avatarRoutes.post('/loadAvatars', avatarsController.loadAvatars);
 
     return avatarRoutes;
 })();

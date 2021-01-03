@@ -33,7 +33,7 @@ app.get('/', (req, res) => {
 })
 
 // db connection
-const port = platform.settings.port
+const port = process.env.PORT || platform.settings.port
 mongoose.connect(platform.settings.dbUri,{ useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
   app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`)

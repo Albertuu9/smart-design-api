@@ -28,6 +28,10 @@ const avatarRoutes = require('./app/routes/avatar/routes')
 app.use('/', loginRoutes)
 app.use('/', avatarRoutes)
 
+app.get('/', (req, res) => {
+  res.send('<b>Versión: 0.1</b>');
+})
+
 // db connection
 const port = platform.settings.port
 mongoose.connect(platform.settings.dbUri,{ useNewUrlParser: true, useUnifiedTopology: true }).then(() => {

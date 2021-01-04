@@ -29,10 +29,10 @@ function checkUserExists(req, res) {
                 res.json({ 'code': 500 })
             }
         }).catch((error) => {
-            console.log(error)
+            res.json({ 'code': 500 })
         })
     }).catch((error) => {
-        console.log(error)
+        res.json({ 'code': 500 })
     })
 }
 

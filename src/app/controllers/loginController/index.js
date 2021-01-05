@@ -26,13 +26,26 @@ function checkUserExists(req, res) {
                 }
                 res.json({ 'code': 200, token: token, user: userResponse })
             } else {
-                res.json({ 'code': 500 })
+                res.json({ 'code': 500})
             }
         }).catch((error) => {
-            res.json({ 'code': 500 })
+            res.json({ 'code': 500, message: error })
         })
     }).catch((error) => {
-        res.json({ 'code': 500 })
+        res.json({ 'code': 500, message: error })
+    })
+}
+
+function loginGoogle(req, res) {
+    User.find({ email: req.body.email },{creationDate: 0, lastUpdate: 0, password: 0}).then((user) => {
+        if(user && user.length > 0) {
+            const token = generateToken();
+            res.json({ 'code': 200, token: token, user: user[0] })
+        } else {
+            res.json({ 'code': 500})
+        }
+    }).catch((error) => {
+        res.json({ 'code': 500, message: error })
     })
 }
 
@@ -197,4 +210,4 @@ function generateToken() {
     return token
 }
 
-module.exports = { checkUserExists, saveNewUser, sendRecoverPasswordCode, checkCodeExists, updatePassword, checkMailExists, loginGuest, checkTokenIsValid }
+module.exports = { checkUserExists, saveNewUser, sendRecoverPasswordCode, checkCodeExists, updatePassword, checkMailExists, loginGuest, checkTokenIsValid, loginGoogle }

@@ -7,6 +7,8 @@ module.exports = (function() {
 
     loginRoutes.post('/login', loginController.checkUserExists);
 
+    loginRoutes.post('/loginGoogle', loginController.loginGoogle);
+
     loginRoutes.post('/loginGuest', loginController.loginGuest);
 
     loginRoutes.post('/saveNewUser', loginController.saveNewUser);

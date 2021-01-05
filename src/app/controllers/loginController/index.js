@@ -1,6 +1,8 @@
 const jwt = require('jsonwebtoken')
 const platform = require('./../../settings/settings')
 const crypto = require('crypto')
+const passwordGenerator = require('password-generator');
+const requestIp = require('request-ip');
 // utils
 const utilDate = require('../../util/utilDate')
 const utilPassword = require('../../util/utilPassword')
@@ -131,6 +133,7 @@ function sendRecoverPasswordCode(req, res) {
 
 function saveNewUser(req, res) {
     let promises = []
+    const isGoogleUser = req.body.isGoogleUser;
     const name = req.body.name
     const surname = req.body.surname
     const country = req.body.country
@@ -174,6 +177,61 @@ function saveNewUser(req, res) {
 
 }
 
+function saveGoogleUser(req, res) {
+    let promises = []
+    const name = req.body.name
+    const surname = req.body.surname
+    const email = req.body.email
+    const password = generateRandomPassword()
+    const avatar = generateRandomAvatar()
+    const userType = 'Particular'
+    const isPremium = false
+    const role = 1;
+    const creationDate = utilDate.getCurrentDate()
+    const lastUpdate = utilDate.getCurrentDate()
+
+    let cryptedPassword = ''
+
+    promises.push(utilPassword.encryptPassword(password).then((hashedPassword) => {
+        cryptedPassword = hashedPassword
+    }))
+
+
+    Promise.all(promises).then(() => {
+        const user = new User({
+            name,
+            surname,
+            country,
+            email,
+            password: cryptedPassword,
+            avatar,
+            userType,
+            isPremium,
+            role,
+            creationDate,
+            lastUpdate
+        });
+
+        user.save().then((result) => {
+            res.json({ code: 200})
+        }).catch((error) => {
+            res.json({ code: 400, message: error })
+        })
+    })
+
+}
+
+function getUserIp(req, res){
+    const clientIp = requestIp.getClientIp(req)
+    console.log('clientIp', clientIp)
+    if(clientIp) {
+        res.json({code: 200, ip: clientIp })
+    } else {
+        res.json({code: 500})
+    }
+    
+}
+
 function generateCode() {
     let code = Math.floor(Math.random() * (99999 - 10000)) + 10000;
     return code
@@ -210,4 +268,8 @@ function generateToken() {
     return token
 }
 
-module.exports = { checkUserExists, saveNewUser, sendRecoverPasswordCode, checkCodeExists, updatePassword, checkMailExists, loginGuest, checkTokenIsValid, loginGoogle }
+function generateRandomPassword(){
+    return passwordGenerator.generatePassword();
+}
+
+module.exports = { checkUserExists, saveNewUser, sendRecoverPasswordCode, checkCodeExists, updatePassword, checkMailExists, loginGuest, checkTokenIsValid, loginGoogle, getUserIp }

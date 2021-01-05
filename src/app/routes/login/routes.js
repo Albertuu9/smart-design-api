@@ -23,5 +23,7 @@ module.exports = (function() {
 
     loginRoutes.post('/checkToken', loginController.checkTokenIsValid);
 
+    loginRoutes.post('/getUserIp', loginController.getUserIp);
+
     return loginRoutes;
 })();

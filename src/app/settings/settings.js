@@ -6,5 +6,6 @@ const settings = {
     secret: process.env.SECRET
 }
 
+
 module.exports = { settings }
 

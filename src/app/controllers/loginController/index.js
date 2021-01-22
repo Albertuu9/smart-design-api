@@ -64,6 +64,8 @@ function loginGuest(req, res) {
 }
 
 function checkCodeExists(req, res) {
+    console.log('req.session',req.session);
+    console.log('req.body.code',req.body.code);
     if (req.body.code === req.session.code) {
         res.json({ 'code': 200 })
     } else {
@@ -73,7 +75,7 @@ function checkCodeExists(req, res) {
 
 function checkMailExists(req, res) {
     User.find({ email: req.body.email }).then((user) => {
-        if (user && user.length === 0) {
+        if (user && user.length > 0) {
             res.json({ 'code': 200 })
         } else {
             res.json({ 'code': 500 })
@@ -122,8 +124,10 @@ function updatePassword(req, res) {
 function sendRecoverPasswordCode(req, res) {
     User.find({ email: req.body.email }).then((user) => {
         if (user && user.length > 0) {
-            req.session.code = generateCode()
+            req.session.code = generateCode();
             req.session.userId = user[0]._id;
+            req.session.save();
+            console.log('reeeeeeeq', req.session);
             mailController.sendMail(user[0], req.session.code, res)
         } else {
             res.json({ 'code': 500 })
@@ -233,7 +237,7 @@ function getUserIp(req, res){
 }
 
 function generateCode() {
-    let code = Math.floor(Math.random() * (99999 - 10000)) + 10000;
+    let code = Math.floor(Math.random() * (999999 - 100000)) + 100000;
     return code
 }
 

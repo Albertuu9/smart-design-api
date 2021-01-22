@@ -14,7 +14,10 @@ app.use(cors())
 app.use(session({
   secret: 'agfinformatique',
   resave: false,
-  saveUninitialized: true
+  saveUninitialized: true,
+  cookie: {
+    secure: false
+  }
 }))
 
 app.set('secret', platform.settings.secret);

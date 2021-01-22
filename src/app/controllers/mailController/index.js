@@ -4,7 +4,7 @@ const mailTemplate = require('./../../templates/mail/index')
 function sendMail(user, code, res){
 // Definimos el transporter
     const transporter = nodemailer.createTransport({
-        service: 'Gmail',
+        service: 'gmail',
         auth: {
             user: 'agf.smartdesign@gmail.com',
             pass: 'Oviedo2020'

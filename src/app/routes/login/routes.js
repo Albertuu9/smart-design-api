@@ -1,9 +1,10 @@
 // controllers
 const loginController = require('../../controllers/loginController/index')
+// router
+const loginRoutes = require('express').Router();
 
 module.exports = (function() {
     'use strict';
-    var loginRoutes = require('express').Router();
 
     loginRoutes.post('/login', loginController.checkUserExists);
 

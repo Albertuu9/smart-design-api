@@ -9,7 +9,7 @@ const utilPassword = require('../../util/utilPassword')
 // models
 const User = require('../../models/user');
 // controllers
-const mailController = require('../mailController/index')
+const mailController = require('../mailController/index');
 
 function checkUserExists(req, res) {
     User.find({ email: req.body.email },{creationDate: 0, lastUpdate: 0}).then((user) => {
@@ -64,19 +64,29 @@ function loginGuest(req, res) {
 }
 
 function checkCodeExists(req, res) {
-    console.log('req.session',req.session);
-    console.log('req.body.code',req.body.code);
-    if (req.body.code === req.session.code) {
-        res.json({ 'code': 200 })
-    } else {
-        res.json({ 'code': 500 })
-    }
+    console.log('req', req.body);
+    User.find({ _id: req.body.id}).then((user) => {
+        console.log('user', user);
+        if(user && user.length > 0){
+            if (parseInt(req.body.code) === user[0].settings.verificationCode) {
+                res.json({ 'code': 200 })
+            } else {
+                res.json({ 'code': 500 })
+            }
+        } else {
+            res.json({ 'code': 500 })
+        }
+    });
 }
 
 function checkMailExists(req, res) {
     User.find({ email: req.body.email }).then((user) => {
         if (user && user.length > 0) {
-            res.json({ 'code': 200 })
+            let payload = {
+                id: user[0]._id,
+                email: user[0].email
+            }
+            res.json({ 'code': 200, 'user': payload })
         } else {
             res.json({ 'code': 500 })
         }
@@ -110,11 +120,11 @@ function updatePassword(req, res) {
     }))
 
     Promise.all(promises).then(() => {
-        User.findByIdAndUpdate(req.session.userId, { 'password': cryptedPassword, 'lastUpdate': utilDate.getCurrentDate() }, ((error, result) => {
+        User.findByIdAndUpdate(req.body.id, { 'password': cryptedPassword, 'lastUpdate': utilDate.getCurrentDate() }, ((error, result) => {
             if (error) {
                 res.json({ 'code': 500 })
             } else {
-                console.log('result', result)
+                console.log('result', result);
                 res.json({ 'code': 200 })
             }
         }))
@@ -124,15 +134,27 @@ function updatePassword(req, res) {
 function sendRecoverPasswordCode(req, res) {
     User.find({ email: req.body.email }).then((user) => {
         if (user && user.length > 0) {
-            req.session.code = generateCode();
-            req.session.userId = user[0]._id;
-            req.session.save();
-            console.log('reeeeeeeq', req.session);
-            mailController.sendMail(user[0], req.session.code, res)
+            const code = generateCode();
+            updateUserSettings(user[0], code, res);
+            mailController.sendMail(user[0], code, res)
         } else {
             res.json({ 'code': 500 })
         }
     })
+}
+
+function updateUserSettings(user, code, res){
+    const settings = {
+        verificationCode: code
+    }
+    User.findByIdAndUpdate(user._id, { 'settings': settings, 'lastUpdate': utilDate.getCurrentDate() }, ((error, result) => {
+        if(error) {
+            res.json({'code': 500});
+        } else {
+            res.json({'code': 200});
+        }
+        
+    }))
 }
 
 function saveNewUser(req, res) {

@@ -2,7 +2,6 @@ const express = require('express')
 const app = express()
 const platform = require('./app/settings/settings')
 const mongoose = require('mongoose')
-const session = require('express-session')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 
@@ -10,15 +9,6 @@ const cors = require('cors')
 app.use(express.json())
 
 app.use(cors())
-
-app.use(session({
-  secret: 'agfinformatique',
-  resave: false,
-  saveUninitialized: true,
-  cookie: {
-    secure: false
-  }
-}))
 
 app.set('secret', platform.settings.secret);
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -37,7 +27,7 @@ app.get('/', (req, res) => {
 
 // db connection
 const port = process.env.PORT || platform.settings.port
-mongoose.connect(platform.settings.dbUri,{ useNewUrlParser: true, useUnifiedTopology: true }).then(() => {
+mongoose.connect(platform.settings.dbUri,{ useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false }).then(() => {
   app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`)
   })

@@ -1,13 +1,14 @@
 const nodemailer = require('nodemailer');
 const mailTemplate = require('./../../templates/mail/index')
+require('dotenv').config();
 // email sender function
 function sendMail(user, code, res){
 // Definimos el transporter
     const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
-            user: 'agf.smartdesign@gmail.com',
-            pass: 'Oviedo2020'
+            user: process.env.MAIL_USER,
+            pass: process.env.MAIL_PASSWORD
         }
     });
 // Definimos el email

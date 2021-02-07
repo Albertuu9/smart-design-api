@@ -5,8 +5,10 @@ require('dotenv').config();
 function sendMail(user, mail, res){
 // Definimos el transporter
     const transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 587,
+        service: 'Gmail',
+        //host: 'myhost',
+        port: 465,
+        secure: true,
         auth: {
             user: process.env.MAIL_USER,
             pass: process.env.MAIL_PASSWORD
@@ -15,9 +17,9 @@ function sendMail(user, mail, res){
 // Definimos el email
 const mailOptions = {
     from: 'Smartdesing',
-    to: process.env.MAIL_TEST ? process.env.MAIL_TEST : user.email,
-    subject: mail.subject,
-    html: mail.body
+    to: 'alberto2daw@gmail.com', // process.env.MAIL_TEST ? process.env.MAIL_TEST : user.email,
+    subject: 'hola', //mail.subject,
+    html: 'heheheehehehehehehehehehehehehehehehehehe' //mail.body
 };
 // Enviamos el email
 transporter.sendMail(mailOptions, function(error, info){

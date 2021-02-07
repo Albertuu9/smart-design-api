@@ -1,8 +1,9 @@
 const jwt = require('jsonwebtoken')
 const platform = require('./../../settings/settings')
 const crypto = require('crypto')
-const passwordGenerator = require('password-generator');
+const generatePassword = require('password-generator');
 const requestIp = require('request-ip');
+const geoip = require('geoip-lite');
 // utils
 const utilDate = require('../../util/utilDate')
 const utilPassword = require('../../util/utilPassword')
@@ -10,9 +11,11 @@ const utilPassword = require('../../util/utilPassword')
 const User = require('../../models/user');
 // controllers
 const mailController = require('../mailController/index');
+// templates
+const mailTemplate = require('./../../templates/mail/index')
 
 function checkUserExists(req, res) {
-    User.find({ email: req.body.email },{creationDate: 0, lastUpdate: 0}).then((user) => {
+    User.find({ email: req.body.email }, { creationDate: 0, lastUpdate: 0 }).then((user) => {
         utilPassword.decryptPassword(req.body.password, user[0].password).then((userExists) => {
             if (userExists) {
                 const token = generateToken();
@@ -28,7 +31,7 @@ function checkUserExists(req, res) {
                 }
                 res.json({ 'code': 200, token: token, user: userResponse })
             } else {
-                res.json({ 'code': 500})
+                res.json({ 'code': 500 })
             }
         }).catch((error) => {
             res.json({ 'code': 500, message: error })
@@ -39,12 +42,12 @@ function checkUserExists(req, res) {
 }
 
 function loginGoogle(req, res) {
-    User.find({ email: req.body.email },{creationDate: 0, lastUpdate: 0, password: 0}).then((user) => {
-        if(user && user.length > 0) {
+    User.find({ email: req.body.email }, { creationDate: 0, lastUpdate: 0, password: 0 }).then((user) => {
+        if (user && user.length > 0) {
             const token = generateToken();
             res.json({ 'code': 200, token: token, user: user[0] })
         } else {
-            res.json({ 'code': 500})
+            res.json({ 'code': 500 })
         }
     }).catch((error) => {
         res.json({ 'code': 500, message: error })
@@ -65,9 +68,8 @@ function loginGuest(req, res) {
 
 function checkCodeExists(req, res) {
     console.log('req', req.body);
-    User.find({ _id: req.body.id}).then((user) => {
-        console.log('user', user);
-        if(user && user.length > 0){
+    User.find({ _id: req.body.id }).then((user) => {
+        if (user && user.length > 0) {
             if (parseInt(req.body.code) === user[0].settings.verificationCode) {
                 res.json({ 'code': 200 })
             } else {
@@ -95,20 +97,20 @@ function checkMailExists(req, res) {
 
 function checkTokenIsValid(req, res) {
     const token = req.body.token
- 
+
     if (token) {
-      jwt.verify(token, platform.settings.secret, (err, decoded) => {      
-        if (err) {
-          res.json({code: 400, message: 'token not valid'});    
-        } else {
-          req.decoded = decoded;    
-          res.json({code: 200, decoded: decoded});
-        }
-      });
+        jwt.verify(token, platform.settings.secret, (err, decoded) => {
+            if (err) {
+                res.json({ code: 400, message: 'token not valid' });
+            } else {
+                req.decoded = decoded;
+                res.json({ code: 200, decoded: decoded });
+            }
+        });
     } else {
-      res.json({code: 500, message: 'token doesn\'t exists'})
+        res.json({ code: 500, message: 'token doesn\'t exists' })
     }
- }
+}
 
 function updatePassword(req, res) {
     const newPassword = req.body.password
@@ -136,37 +138,41 @@ function sendRecoverPasswordCode(req, res) {
         if (user && user.length > 0) {
             const code = generateCode();
             updateUserSettings(user[0], code, res);
-            mailController.sendMail(user[0], code, res)
+            // mail object
+            const mail = {
+                subject: 'Código de verificación',
+                body: mailTemplate.sendCodeTemplate(code)
+            }
+            mailController.sendMail(user[0], mail, res)
         } else {
             res.json({ 'code': 500 })
         }
     })
 }
 
-function updateUserSettings(user, code, res){
+function updateUserSettings(user, code, res) {
     const settings = {
         verificationCode: code
     }
     User.findByIdAndUpdate(user._id, { 'settings': settings, 'lastUpdate': utilDate.getCurrentDate() }, ((error, result) => {
-        if(error) {
-            res.json({'code': 500});
+        if (error) {
+            res.json({ 'code': 500 });
         } else {
-            res.json({'code': 200});
+            res.json({ 'code': 200 });
         }
-        
+
     }))
 }
 
 function saveNewUser(req, res) {
     let promises = []
-    const isGoogleUser = req.body.isGoogleUser;
     const name = req.body.name
     const surname = req.body.surname
     const country = req.body.country
     const email = req.body.email
-    const password = req.body.password
-    const avatar = req.body.avatar
-    const userType = req.body.userType
+    const password = req.body.method === 'google' ? generateRandomPassword() : req.body.password
+    const avatar = req.body.method === 'google' ? generateRandomAvatar() : req.body.avatar
+    const userType = req.body.method === 'google' ? 'Particular' : req.body.userType
     const isPremium = false
     const role = 1;
     const creationDate = utilDate.getCurrentDate()
@@ -195,7 +201,15 @@ function saveNewUser(req, res) {
         });
 
         user.save().then((result) => {
-            res.json({ code: 200})
+            user.passwordShowed = password
+            // mail object
+            const mail = {
+                subject: 'Usuario registrado correctamente',
+                body: mailTemplate.userRegisteredTemplate(user)
+            }
+            mailController.sendMail(user, mail, res)
+
+            res.json({ code: 200 })
         }).catch((error) => {
             res.json({ code: 400, message: error })
         })
@@ -203,59 +217,23 @@ function saveNewUser(req, res) {
 
 }
 
-function saveGoogleUser(req, res) {
-    let promises = []
-    const name = req.body.name
-    const surname = req.body.surname
-    const email = req.body.email
-    const password = generateRandomPassword()
-    const avatar = generateRandomAvatar()
-    const userType = 'Particular'
-    const isPremium = false
-    const role = 1;
-    const creationDate = utilDate.getCurrentDate()
-    const lastUpdate = utilDate.getCurrentDate()
-
-    let cryptedPassword = ''
-
-    promises.push(utilPassword.encryptPassword(password).then((hashedPassword) => {
-        cryptedPassword = hashedPassword
-    }))
-
-
-    Promise.all(promises).then(() => {
-        const user = new User({
-            name,
-            surname,
-            country,
-            email,
-            password: cryptedPassword,
-            avatar,
-            userType,
-            isPremium,
-            role,
-            creationDate,
-            lastUpdate
-        });
-
-        user.save().then((result) => {
-            res.json({ code: 200})
-        }).catch((error) => {
-            res.json({ code: 400, message: error })
-        })
-    })
-
-}
-
-function getUserIp(req, res){
+function getUserIp(req, res) {
     const clientIp = requestIp.getClientIp(req)
-    console.log('clientIp', clientIp)
-    if(clientIp) {
-        res.json({code: 200, ip: clientIp })
+    if (clientIp) {
+        res.json({ code: 200, ip: clientIp })
     } else {
-        res.json({code: 500})
+        res.json({ code: 500 })
     }
-    
+
+}
+
+function getUserCountryByIp(req, res) {
+    let geo = geoip.lookup(req.body.ip)
+    if (geo) {
+        res.json({ code: 200, data: geo })
+    } else {
+        res.json({ code: 500 })
+    }
 }
 
 function generateCode() {
@@ -263,7 +241,7 @@ function generateCode() {
     return code
 }
 
-function generateRandomAvatar(){
+function generateRandomAvatar() {
     let avatars = ['https://i.ibb.co/fQWWKmt/guest1.png',
         'https://i.ibb.co/bX6RRts/guest2.png',
         'https://i.ibb.co/DVCzFyR/guest3.png',
@@ -274,10 +252,10 @@ function generateRandomAvatar(){
         'https://i.ibb.co/5FcJQ21/guest8.png']
     let random = Math.floor(Math.random() * (avatars.length - 0));
     return avatars[random];
-    
+
 }
 
-function generateGuestHash(){
+function generateGuestHash() {
     let current_date = (new Date()).valueOf().toString()
     let random = Math.random().toString()
     let result = crypto.createHash('sha1').update(current_date + random).digest('hex')
@@ -294,8 +272,20 @@ function generateToken() {
     return token
 }
 
-function generateRandomPassword(){
-    return passwordGenerator.generatePassword();
+function generateRandomPassword() {
+    return generatePassword();
 }
 
-module.exports = { checkUserExists, saveNewUser, sendRecoverPasswordCode, checkCodeExists, updatePassword, checkMailExists, loginGuest, checkTokenIsValid, loginGoogle, getUserIp }
+module.exports = {
+    checkUserExists,
+    saveNewUser,
+    sendRecoverPasswordCode,
+    checkCodeExists,
+    updatePassword,
+    checkMailExists,
+    loginGuest,
+    checkTokenIsValid,
+    loginGoogle,
+    getUserIp,
+    getUserCountryByIp
+}

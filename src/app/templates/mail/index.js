@@ -5,4 +5,14 @@ function sendCodeTemplate(code) {
     </div>`
 }
 
-module.exports = { sendCodeTemplate }
+function userRegisteredTemplate(data) {
+    return `<div style="padding: 2%">
+    <span>Enhorabuena <b>${data.name} ${data.surname ? data.surname : ''}</b> has sido registrado correctamente.</span>
+    <p>Tu correo electrónico para acceder es: <b>${data.email}</b></p>
+    <p>Tu contraseña para acceder es: <b>${data.passwordShowed}</b></p>
+    <p>Puedes cambiarla en cualquier momento desde la opción <b>Mi perfil</b></p>
+    <p>Gracias por utilizar smartdesign.</p>
+    </div>`
+}
+
+module.exports = { sendCodeTemplate, userRegisteredTemplate }

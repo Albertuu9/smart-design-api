@@ -1,3 +1,5 @@
+// middlewares
+const LoginMiddleware = require('../../middlewares/login/middlewares')
 // controllers
 const loginController = require('../../controllers/loginController/index')
 // router
@@ -12,7 +14,7 @@ module.exports = (function() {
 
     loginRoutes.post('/loginGuest', loginController.loginGuest);
 
-    loginRoutes.post('/saveNewUser', loginController.saveNewUser);
+    loginRoutes.post('/saveNewUser', LoginMiddleware.checkUserExists, loginController.saveNewUser);
 
     loginRoutes.post('/sendRecoverPasswordCode', loginController.sendRecoverPasswordCode);
 
@@ -25,6 +27,8 @@ module.exports = (function() {
     loginRoutes.post('/checkToken', loginController.checkTokenIsValid);
 
     loginRoutes.post('/getUserIp', loginController.getUserIp);
+
+    loginRoutes.post('/getUserCountryByIp', loginController.getUserCountryByIp);
 
     return loginRoutes;
 })();

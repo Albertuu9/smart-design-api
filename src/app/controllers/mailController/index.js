@@ -1,8 +1,8 @@
 const nodemailer = require('nodemailer');
-const mailTemplate = require('./../../templates/mail/index')
+
 require('dotenv').config();
 // email sender function
-function sendMail(user, code, res){
+function sendMail(user, mail, res){
 // Definimos el transporter
     const transporter = nodemailer.createTransport({
         service: 'gmail',
@@ -14,9 +14,9 @@ function sendMail(user, code, res){
 // Definimos el email
 const mailOptions = {
     from: 'Smartdesing',
-    to: user.email,
-    subject: 'Código de verificación',
-    html: mailTemplate.sendCodeTemplate(code)
+    to: process.env.MAIL_TEST ? process.env.MAIL_TEST : user.email,
+    subject: mail.subject,
+    html: mail.body
 };
 // Enviamos el email
 transporter.sendMail(mailOptions, function(error, info){

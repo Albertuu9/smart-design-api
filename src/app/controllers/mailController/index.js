@@ -17,9 +17,9 @@ function sendMail(user, mail, res){
 // Definimos el email
 const mailOptions = {
     from: 'Smartdesing',
-    to: 'alberto2daw@gmail.com', // process.env.MAIL_TEST ? process.env.MAIL_TEST : user.email,
-    subject: 'hola', //mail.subject,
-    html: 'heheheehehehehehehehehehehehehehehehehehe' //mail.body
+    to: process.env.MAIL_TEST ? process.env.MAIL_TEST : user.email,
+    subject: mail.subject,
+    html: mail.body
 };
 // Enviamos el email
 transporter.sendMail(mailOptions, function(error, info){

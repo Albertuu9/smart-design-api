@@ -4,11 +4,14 @@ const platform = require('./app/settings/settings')
 const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
 const cors = require('cors')
+var getRealIp = require('express-real-ip')()
 
 // middlewares
 app.use(express.json())
 
 app.use(cors())
+
+app.use(getRealIp);
 
 app.set('secret', platform.settings.secret);
 app.use(bodyParser.urlencoded({ extended: true }));

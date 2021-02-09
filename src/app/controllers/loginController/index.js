@@ -5,6 +5,7 @@ const generatePassword = require('password-generator');
 const requestIp = require('request-ip');
 const geoip = require('geoip-lite');
 const publicIp = require('public-ip');
+const getIp = require('real-ip');
 var ip = require('ip');
 // utils
 const utilDate = require('../../util/utilDate')
@@ -220,12 +221,18 @@ function saveNewUser(req, res) {
 }
 
 function getUserIp(req, res) {
-    var a = ip.address();
-    if(a) {
-        res.json({ code: 200, ip: a })
+    if(req.ip) {
+        res.json({ code: 200, ip: req.ip })
     } else {
         res.json({ code: 500 })
     }
+    
+    // var a = ip.address();
+    // if(a) {
+    //     res.json({ code: 200, ip: a })
+    // } else {
+    //     res.json({ code: 500 })
+    // }
     // publicIp.v4().then(ip => {
     //     if (ip) {
     //         res.json({ code: 200, ip: ip })

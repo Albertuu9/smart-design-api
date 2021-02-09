@@ -2,10 +2,6 @@ const jwt = require('jsonwebtoken')
 const platform = require('./../../settings/settings')
 const crypto = require('crypto')
 const generatePassword = require('password-generator');
-const requestIp = require('request-ip');
-const geoip = require('geoip-lite');
-const publicIp = require('public-ip');
-const getIp = require('real-ip');
 var ip = require('ip');
 // utils
 const utilDate = require('../../util/utilDate')
@@ -221,18 +217,12 @@ function saveNewUser(req, res) {
 }
 
 function getUserIp(req, res) {
-    if(req.ip) {
-        res.json({ code: 200, ip: req.ip })
+    var userIp = ip.address();
+    if(userIp) {
+        res.json({ code: 200, ip: userIp })
     } else {
         res.json({ code: 500 })
     }
-    
-    // var a = ip.address();
-    // if(a) {
-    //     res.json({ code: 200, ip: a })
-    // } else {
-    //     res.json({ code: 500 })
-    // }
     // publicIp.v4().then(ip => {
     //     if (ip) {
     //         res.json({ code: 200, ip: ip })

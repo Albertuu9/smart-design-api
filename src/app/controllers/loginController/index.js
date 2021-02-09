@@ -221,7 +221,11 @@ function saveNewUser(req, res) {
 
 function getUserIp(req, res) {
     var a = ip.address();
-    console.log("private ip address", a);
+    if(a) {
+        res.json({ code: 200, ip: a })
+    } else {
+        res.json({ code: 500 })
+    }
     // publicIp.v4().then(ip => {
     //     if (ip) {
     //         res.json({ code: 200, ip: ip })

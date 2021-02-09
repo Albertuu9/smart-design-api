@@ -4,6 +4,8 @@ const crypto = require('crypto')
 const generatePassword = require('password-generator');
 const requestIp = require('request-ip');
 const geoip = require('geoip-lite');
+const publicIp = require('public-ip');
+var ip = require('ip');
 // utils
 const utilDate = require('../../util/utilDate')
 const utilPassword = require('../../util/utilPassword')
@@ -218,13 +220,16 @@ function saveNewUser(req, res) {
 }
 
 function getUserIp(req, res) {
-    const clientIp = requestIp.getClientIp(req)
-    if (clientIp) {
-        res.json({ code: 200, ip: clientIp })
-    } else {
-        res.json({ code: 500 })
-    }
-
+    var a = ip.address();
+    console.log("private ip address", a);
+    // publicIp.v4().then(ip => {
+    //     if (ip) {
+    //         res.json({ code: 200, ip: ip })
+    //     } else {
+    //         res.json({ code: 500 })
+    //     }
+    // });
+    //const clientIp = requestIp.getClientIp(req)
 }
 
 function getUserCountryByIp(req, res) {

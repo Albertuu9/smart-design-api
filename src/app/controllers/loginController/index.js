@@ -2,7 +2,8 @@ const jwt = require('jsonwebtoken')
 const platform = require('./../../settings/settings')
 const crypto = require('crypto')
 const generatePassword = require('password-generator');
-var ip = require('ip');
+const ip = require('ip');
+const geoip = require('geoip-lite');
 // utils
 const utilDate = require('../../util/utilDate')
 const utilPassword = require('../../util/utilPassword')

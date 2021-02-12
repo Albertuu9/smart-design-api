@@ -3,7 +3,6 @@ const platform = require('./../../settings/settings')
 const crypto = require('crypto')
 const generatePassword = require('password-generator');
 const geoip = require('geoip-lite');
-const RequestIp = require('@supercharge/request-ip')
 // utils
 const utilDate = require('../../util/utilDate')
 const utilPassword = require('../../util/utilPassword')
@@ -217,30 +216,6 @@ function saveNewUser(req, res) {
 
 }
 
-function getUserIp(req, res) {
-    const clientIp = RequestIp.getClientIp(req);
-    if(clientIp) {
-        res.json({ code: 200, ip: clientIp });
-    } else {
-        res.json({ code: 500 });
-    }
-    
-    // var userIp = ip.address();
-    // if(userIp) {
-    //     res.json({ code: 200, ip: userIp })
-    // } else {
-    //     res.json({ code: 500 })
-    // }
-    // publicIp.v4().then(ip => {
-    //     if (ip) {
-    //         res.json({ code: 200, ip: ip })
-    //     } else {
-    //         res.json({ code: 500 })
-    //     }
-    // });
-    //const clientIp = requestIp.getClientIp(req)
-}
-
 function getUserCountryByIp(req, res) {
     let geo = geoip.lookup(req.body.ip)
     if (geo) {
@@ -300,6 +275,5 @@ module.exports = {
     loginGuest,
     checkTokenIsValid,
     loginGoogle,
-    getUserIp,
     getUserCountryByIp
 }

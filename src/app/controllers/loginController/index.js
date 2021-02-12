@@ -10,6 +10,8 @@ const utilPassword = require('../../util/utilPassword')
 const User = require('../../models/user');
 // controllers
 const mailController = require('../mailController/index');
+// shared
+const generic = require('../../shared/generic');
 // templates
 const mailTemplate = require('./../../templates/mail/index')
 
@@ -17,7 +19,7 @@ function checkUserExists(req, res) {
     User.find({ email: req.body.email }, { creationDate: 0, lastUpdate: 0 }).then((user) => {
         utilPassword.decryptPassword(req.body.password, user[0].password).then((userExists) => {
             if (userExists) {
-                const token = generateToken();
+                const token = generic.generateToken();
                 let userResponse = {
                     _id: user[0]._id,
                     name: user[0].name,
@@ -43,7 +45,7 @@ function checkUserExists(req, res) {
 function loginGoogle(req, res) {
     User.find({ email: req.body.email }, { creationDate: 0, lastUpdate: 0, password: 0 }).then((user) => {
         if (user && user.length > 0) {
-            const token = generateToken();
+            const token = generic.generateToken();
             res.json({ 'code': 200, token: token, user: user[0] })
         } else {
             res.json({ 'code': 500 })
@@ -54,7 +56,7 @@ function loginGoogle(req, res) {
 }
 
 function loginGuest(req, res) {
-    const token = generateToken()
+    const token = generic.generateToken();
     let hash = generateGuestHash()
     let user = {
         _id: hash,
@@ -200,6 +202,7 @@ function saveNewUser(req, res) {
         });
 
         user.save().then((result) => {
+            const token = generic.generateToken();
             user.passwordShowed = password
             // mail object
             const mail = {
@@ -208,7 +211,7 @@ function saveNewUser(req, res) {
             }
             mailController.sendMail(user, mail, res)
 
-            res.json({ code: 200 })
+            res.json({ code: 200, user: user, token: token  })
         }).catch((error) => {
             res.json({ code: 400, message: error })
         })
@@ -249,16 +252,6 @@ function generateGuestHash() {
     let random = Math.random().toString()
     let result = crypto.createHash('sha1').update(current_date + random).digest('hex')
     return result
-}
-
-function generateToken() {
-    const payload = {
-        check: true
-    };
-    const token = jwt.sign(payload, platform.settings.secret, {
-        expiresIn: '48h'
-    });
-    return token
 }
 
 function generateRandomPassword() {

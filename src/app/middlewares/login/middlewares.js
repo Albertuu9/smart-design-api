@@ -4,6 +4,8 @@ const platform = require('../../settings/settings')
 const User = require('../../models/user');
 // utils
 const utilDate = require('../../util/utilDate')
+// shared
+const generic = require('../../shared/generic')
 
 function validateToken(req, res, next) {
   const token = req.headers['access-token'];
@@ -25,12 +27,12 @@ function validateToken(req, res, next) {
 function checkUserExists(req, res, next) {
   User.find({ email: req.body.email }).then((user) => {
     if (user && user.length > 0) {
-      console.log('el usuario existe', user);
       User.findByIdAndUpdate(user[0]._id, { 'lastUpdate': utilDate.getCurrentDate() }, ((error, result) => {
+        const token = generic.generateToken();
         if (error) {
           res.json({ 'code': 500, message: error });
         } else {
-          res.json({ 'code': 200, message: 'user updated success' });
+          res.json({ 'code': 200, message: 'user updated success', user: user[0], token: token });
         }
       }))
     } else {

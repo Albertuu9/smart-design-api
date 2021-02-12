@@ -218,12 +218,18 @@ function saveNewUser(req, res) {
 }
 
 function getUserIp(req, res) {
-    var userIp = ip.address();
-    if(userIp) {
-        res.json({ code: 200, ip: userIp })
+    const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    if(ip) {
+        res.json({ code: 200, ip: ip });
     } else {
-        res.json({ code: 500 })
+        res.json({ code: 500 });
     }
+    // var userIp = ip.address();
+    // if(userIp) {
+    //     res.json({ code: 200, ip: userIp })
+    // } else {
+    //     res.json({ code: 500 })
+    // }
     // publicIp.v4().then(ip => {
     //     if (ip) {
     //         res.json({ code: 200, ip: ip })

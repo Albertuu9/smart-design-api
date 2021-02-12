@@ -1,3 +1,6 @@
+const jwt = require('jsonwebtoken')
+const platform = require('./../settings/settings')
+
 function generateToken() {
     const payload = {
         check: true

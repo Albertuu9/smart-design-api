@@ -3,9 +3,12 @@ const platform = require('./../../settings/settings')
 const crypto = require('crypto')
 const generatePassword = require('password-generator');
 const geoip = require('geoip-lite');
+const axios = require('axios');
 // utils
 const utilDate = require('../../util/utilDate')
 const utilPassword = require('../../util/utilPassword')
+// api
+const UserApi = require('../../api/User');
 // models
 const User = require('../../models/user');
 // controllers
@@ -15,22 +18,17 @@ const generic = require('../../shared/generic');
 // templates
 const mailTemplate = require('./../../templates/mail/index')
 
+const url = process.env.DEV_URL // process.env.PROD_URL;
+
 function checkUserExists(req, res) {
     User.find({ email: req.body.email }, { creationDate: 0, lastUpdate: 0 }).then((user) => {
         utilPassword.decryptPassword(req.body.password, user[0].password).then((userExists) => {
             if (userExists) {
                 const token = generic.generateToken();
                 let userResponse = {
-                    _id: user[0]._id,
-                    name: user[0].name,
-                    surname: user[0].surname,
-                    country: user[0].country,
-                    email: user[0].email,
-                    userType: user[0].userType,
-                    isPremium: user[0].isPremium,
-                    role: user[0].role
+                    id: user[0]._id
                 }
-                res.json({ 'code': 200, token: token, user: userResponse })
+                res.json({ 'code': 200, token: token, user: userResponse.id })
             } else {
                 res.json({ 'code': 500 })
             }
@@ -43,7 +41,7 @@ function checkUserExists(req, res) {
 }
 
 function loginGoogle(req, res) {
-    User.find({ email: req.body.email }, { creationDate: 0, lastUpdate: 0, password: 0 }).then((user) => {
+    User.find({ email: req.body.email }, { creationDate: 0, lastUpdate: 0, settings: 0 }).then((user) => {
         if (user && user.length > 0) {
             const token = generic.generateToken();
             res.json({ 'code': 200, token: token, user: user[0] })
@@ -165,15 +163,15 @@ function updateUserSettings(user, code, res) {
     }))
 }
 
-function saveNewUser(req, res) {
+function saveNewUser(req, res, method = null) {
     let promises = []
     const name = req.body.name
     const surname = req.body.surname
     const country = req.body.country
     const email = req.body.email
-    const password = req.body.method === 'google' ? generateRandomPassword() : req.body.password
-    const avatar = req.body.method === 'google' ? generateRandomAvatar() : req.body.avatar
-    const userType = req.body.method === 'google' ? 'Particular' : req.body.userType
+    const password = req.body.method === 'google' || 'github' ? generateRandomPassword() : req.body.password
+    const avatar = req.body.method === 'google' || 'github' ? generateRandomAvatar() : req.body.avatar
+    const userType = req.body.method === 'google' || 'github' ? 'Particular' : req.body.userType
     const isPremium = false
     const role = 1;
     const creationDate = utilDate.getCurrentDate()
@@ -211,12 +209,30 @@ function saveNewUser(req, res) {
             }
             mailController.sendMail(user, mail, res)
 
-            res.json({ code: 200, user: user, token: token  })
+            let userLogged = {
+                id: user._id
+            }
+
+            if(method) {
+                res.redirect(process.env.URL + '/#/socialLogin?id='+userLogged.id+'&token='+token);
+            } else {
+                res.json({ code: 200, user: userLogged.id, token: token })
+            }
+            
         }).catch((error) => {
             res.json({ code: 400, message: error })
         })
     })
 
+}
+
+function checkUserById(req, res){
+    let id = req.body.id;
+    UserApi.getUserById(id).then((user) => {
+        res.json({ 'code': 200, 'user': user })
+    }).catch((error) => {
+        res.json({ 'code': 500, 'message': error })
+    });
 }
 
 function getUserCountryByIp(req, res) {
@@ -254,6 +270,28 @@ function generateGuestHash() {
     return result
 }
 
+
+// github connection
+function getGithubError(req, res) {
+    res.json({ 'code': 500, 'message': 'error' });
+}
+
+function authGithubCallback(req, res) {
+    getIp().then((response) => {
+        let geo = geoip.lookup(response.data.ip);
+        let user = req.user._json;
+        req.body.country = geo.country;
+        req.body.name = user.name;
+        req.body.email = user.email ? user.email : user.login;
+    
+        saveNewUser(req, res, 'socialLogin');
+    })
+}
+
+function getIp(req, res) {
+    return axios.get('https://api.ipify.org/?format=json')
+}
+
 function generateRandomPassword() {
     return generatePassword();
 }
@@ -268,5 +306,9 @@ module.exports = {
     loginGuest,
     checkTokenIsValid,
     loginGoogle,
-    getUserCountryByIp
+    getUserCountryByIp,
+    getGithubError,
+    authGithubCallback,
+    getIp,
+    checkUserById
 }

@@ -4,14 +4,26 @@ const platform = require('./app/settings/settings')
 const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
 const cors = require('cors')
-var getRealIp = require('express-real-ip')()
+const cookieSession = require('cookie-session')
+const passport = require('passport');
 
 // middlewares
 app.use(express.json())
 
-app.use(cors())
+app.use(cors({
+  credentials: true,
+  origin: [
+    'http://localhost:8080'
+  ]
+}))
 
-app.use(getRealIp);
+
+app.use(cookieSession({
+  name: 'github-auth-session',
+  keys: ['key1', 'key2']
+}))
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.set('secret', platform.settings.secret);
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -30,7 +42,7 @@ app.get('/', (req, res) => {
 
 // db connection
 const port = process.env.PORT || platform.settings.port
-mongoose.connect(platform.settings.dbUri,{ useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false }).then(() => {
+mongoose.connect(platform.settings.dbUri, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false }).then(() => {
   app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`)
   })

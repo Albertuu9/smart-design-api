@@ -1,3 +1,5 @@
+const passport = require('passport');
+require('./../../auth/passport');
 // middlewares
 const LoginMiddleware = require('../../middlewares/login/middlewares')
 // controllers
@@ -27,6 +29,16 @@ module.exports = (function() {
     loginRoutes.post('/checkToken', loginController.checkTokenIsValid);
 
     loginRoutes.post('/getUserCountryByIp', loginController.getUserCountryByIp);
+
+    loginRoutes.get('/getIp', loginController.getIp);
+
+    loginRoutes.post('/checkUserById', loginController.checkUserById);
+
+    loginRoutes.post('/auth/error', loginController.getGithubError);
+
+    loginRoutes.get('/auth/github', passport.authenticate('github',{ scope: [ 'user:email' ] }));
+
+    loginRoutes.get('/auth/github/callback', passport.authenticate('github', { failureRedirect: '/auth/error' }), LoginMiddleware.checkUserExists, loginController.authGithubCallback);
 
     return loginRoutes;
 })();

@@ -25,14 +25,32 @@ function validateToken(req, res, next) {
 }
 
 function checkUserExists(req, res, next) {
-  User.find({ email: req.body.email }).then((user) => {
+  let email = '';
+  let method = null;
+  if(req.user) {
+    email = req.user._json.email ? req.user._json.email : req.user._json.login;
+    method = 'socialLogin'
+  } else {
+    email = req.body.email;
+  }
+
+  User.find({ email: email }).then((user) => {
     if (user && user.length > 0) {
-      User.findByIdAndUpdate(user[0]._id, { 'lastUpdate': utilDate.getCurrentDate() }, ((error, result) => {
+      const userObject = user[0]
+      User.findByIdAndUpdate(userObject._id, { 'lastUpdate': utilDate.getCurrentDate() }, ((error, result) => {
         const token = generic.generateToken();
         if (error) {
           res.json({ 'code': 500, message: error });
         } else {
-          res.json({ 'code': 200, message: 'user updated success', user: user[0], token: token });
+          let userLogged = {
+            id: userObject._id
+        }
+        if(method) {
+          res.redirect(process.env.URL + '/#/socialLogin?id='+userLogged.id+'&token='+token);
+        } else {
+          res.json({ 'code': 200, message: 'user updated success', user: userLogged.id, token: token });
+        }
+          
         }
       }))
     } else {

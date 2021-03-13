@@ -46,7 +46,10 @@ function checkUserExists(req, res, next) {
             id: userObject._id
         }
         if(method) {
-          res.redirect(process.env.URL + '/#/socialLogin?id='+userLogged.id+'&token='+token);
+          //dev uri
+          // res.redirect(process.env.DEV_URL + '/#/socialLogin?id='+userLogged.id+'&token='+token);
+          // prod uri
+          res.redirect(process.env.PROD_URL + '/#/socialLogin?id='+userLogged.id+'&token='+token);
         } else {
           res.json({ 'code': 200, message: 'user updated success', user: userLogged.id, token: token });
         }

@@ -10,12 +10,7 @@ const passport = require('passport');
 // middlewares
 app.use(express.json())
 
-app.use(cors({
-  credentials: true,
-  origin: [
-    'http://localhost:8080'
-  ]
-}))
+app.use(cors())
 
 
 app.use(cookieSession({
@@ -32,8 +27,10 @@ app.use(bodyParser.json());
 // routes
 const loginRoutes = require('./app/routes/login/routes');
 const avatarRoutes = require('./app/routes/avatar/routes')
+const utilRoutes = require('./app/routes/util/routes')
 
 app.use('/', loginRoutes)
+app.use('/', utilRoutes)
 app.use('/', avatarRoutes)
 
 app.get('/', (req, res) => {

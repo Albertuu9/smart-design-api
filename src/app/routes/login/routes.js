@@ -34,11 +34,15 @@ module.exports = (function() {
 
     loginRoutes.post('/checkUserById', loginController.checkUserById);
 
-    loginRoutes.post('/auth/error', loginController.getGithubError);
+    loginRoutes.post('/auth/error', loginController.getError);
 
     loginRoutes.get('/auth/github', passport.authenticate('github',{ scope: [ 'user:email' ] }));
 
-    loginRoutes.get('/auth/github/callback', passport.authenticate('github', { failureRedirect: '/auth/error' }), LoginMiddleware.checkUserExists, loginController.authGithubCallback);
+    loginRoutes.get('/auth/github/callback', passport.authenticate('github', { failureRedirect: '/auth/error' }), LoginMiddleware.checkUserExists, loginController.authSocialLogin);
+
+    loginRoutes.get('/auth/google', passport.authenticate('google',{ scope: ['profile', 'email'] }));
+
+    loginRoutes.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/auth/error' }), LoginMiddleware.checkUserExists, loginController.authSocialLogin);
 
     return loginRoutes;
 })();

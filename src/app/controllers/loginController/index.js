@@ -18,8 +18,6 @@ const generic = require('../../shared/generic');
 // templates
 const mailTemplate = require('./../../templates/mail/index')
 
-const url = process.env.DEV_URL // process.env.PROD_URL;
-
 function checkUserExists(req, res) {
     User.find({ email: req.body.email }, { creationDate: 0, lastUpdate: 0 }).then((user) => {
         utilPassword.decryptPassword(req.body.password, user[0].password).then((userExists) => {
@@ -272,11 +270,11 @@ function generateGuestHash() {
 
 
 // github connection
-function getGithubError(req, res) {
+function getError(req, res) {
     res.json({ 'code': 500, 'message': 'error' });
 }
 
-function authGithubCallback(req, res) {
+function authSocialLogin(req, res) {
     getIp().then((response) => {
         let geo = geoip.lookup(response.data.ip);
         let user = req.user._json;
@@ -307,8 +305,8 @@ module.exports = {
     checkTokenIsValid,
     loginGoogle,
     getUserCountryByIp,
-    getGithubError,
-    authGithubCallback,
+    getError,
+    authSocialLogin,
     getIp,
     checkUserById
 }

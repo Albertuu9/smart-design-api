@@ -3,6 +3,7 @@ const nodemailer = require('nodemailer');
 require('dotenv').config();
 // email sender function
 function sendMail(user, mail, res){
+
 // Definimos el transporter
     const transporter = nodemailer.createTransport({
         service: 'Gmail',
@@ -16,7 +17,7 @@ function sendMail(user, mail, res){
     });
 // Definimos el email
 const mailOptions = {
-    from: 'Smartdesing',
+    from: 'Smartdesign',
     // to: process.env.MAIL_TEST ? process.env.MAIL_TEST : user.email,
     to: user.email,
     subject: mail.subject,

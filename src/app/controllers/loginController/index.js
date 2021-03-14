@@ -200,12 +200,15 @@ function saveNewUser(req, res, method = null) {
         user.save().then((result) => {
             const token = generic.generateToken();
             user.passwordShowed = password
-            // mail object
-            const mail = {
-                subject: 'Usuario registrado correctamente',
-                body: mailTemplate.userRegisteredTemplate(user)
+
+            if(!req.body.method || req.body.method !== 'github') {
+                // mail object
+                const mail = {
+                    subject: 'Usuario registrado correctamente',
+                    body: mailTemplate.userRegisteredTemplate(user)
+                }
+                mailController.sendMail(user, mail, res)
             }
-            mailController.sendMail(user, mail, res)
 
             let userLogged = {
                 id: user._id

@@ -36,7 +36,7 @@ module.exports = (function() {
 
     loginRoutes.post('/auth/error', loginController.getError);
 
-    loginRoutes.get('/auth/github', passport.authenticate('github',{ scope: [ 'user:email' ] }));
+    loginRoutes.get('/auth/github', passport.authenticate('github',{ scope: ['profile', 'email'] }));
 
     loginRoutes.get('/auth/github/callback', passport.authenticate('github', { failureRedirect: '/auth/error' }), LoginMiddleware.checkUserExists, loginController.authSocialLogin);
 

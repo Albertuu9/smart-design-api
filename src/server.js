@@ -12,11 +12,6 @@ app.use(express.json())
 
 app.use(cors())
 
-
-app.use(cookieSession({
-  name: 'github-auth-session',
-  keys: ['key1', 'key2']
-}))
 app.use(passport.initialize());
 app.use(passport.session());
 

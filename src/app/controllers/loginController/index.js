@@ -214,9 +214,9 @@ function saveNewUser(req, res) {
 
             if (type) {
                 //dev uri
-                res.redirect(process.env.DEV_URL + '/#/socialLogin?id=' + userLogged.id + '&token=' + token);
+                // res.redirect(process.env.DEV_URL + '/#/socialLogin?id=' + userLogged.id + '&token=' + token);
                 // prod uri
-                // res.redirect(process.env.PROD_URL + '/#/socialLogin?id='+userLogged.id+'&token='+token);
+                res.redirect(process.env.PROD_URL + '/#/socialLogin?id='+userLogged.id+'&token='+token);
             } else {
                 res.json({ code: 200, user: userLogged.id, token: token })
             }

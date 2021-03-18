@@ -161,20 +161,20 @@ function updateUserSettings(user, code, res) {
     }))
 }
 
-function saveNewUser(req, res, method = null) {
+function saveNewUser(req, res) {
     let promises = []
     const name = req.body.name
     const surname = req.body.surname
     const country = req.body.country
     const email = req.body.email
-    const password = req.body.method === 'google' || 'github' ? generateRandomPassword() : req.body.password
-    const avatar = req.body.method === 'google' || 'github' ? generateRandomAvatar() : req.body.avatar
-    const userType = req.body.method === 'google' || 'github' ? 'Particular' : req.body.userType
+    const password = req.body.method === 'google' ? generateRandomPassword() : req.body.password
+    const avatar = req.body.method === 'google' ? generateRandomAvatar() : req.body.avatar
+    const userType = req.body.method === 'google' ? 'Particular' : req.body.userType
     const isPremium = false
     const role = 1;
     const creationDate = utilDate.getCurrentDate()
     const lastUpdate = utilDate.getCurrentDate()
-
+    const type = req.body.social ? req.body.social : null
     let cryptedPassword = ''
 
     promises.push(utilPassword.encryptPassword(password).then((hashedPassword) => {
@@ -199,30 +199,28 @@ function saveNewUser(req, res, method = null) {
 
         user.save().then((result) => {
             const token = generic.generateToken();
+            
             user.passwordShowed = password
-
-            if(!req.body.method || req.body.method !== 'github') {
-                // mail object
-                const mail = {
-                    subject: 'Usuario registrado correctamente',
-                    body: mailTemplate.userRegisteredTemplate(user)
-                }
-                mailController.sendMail(user, mail, res)
+            // mail object
+            const mail = {
+                subject: 'Usuario registrado correctamente',
+                body: mailTemplate.userRegisteredTemplate(user)
             }
+            mailController.sendMail(user, mail, res)
 
             let userLogged = {
                 id: user._id
             }
 
-            if(method) {
+            if (type) {
                 //dev uri
-                // res.redirect(process.env.DEV_URL + '/#/socialLogin?id='+userLogged.id+'&token='+token);
+                res.redirect(process.env.DEV_URL + '/#/socialLogin?id=' + userLogged.id + '&token=' + token);
                 // prod uri
-                res.redirect(process.env.PROD_URL + '/#/socialLogin?id='+userLogged.id+'&token='+token);
+                // res.redirect(process.env.PROD_URL + '/#/socialLogin?id='+userLogged.id+'&token='+token);
             } else {
                 res.json({ code: 200, user: userLogged.id, token: token })
             }
-            
+
         }).catch((error) => {
             res.json({ code: 400, message: error })
         })
@@ -230,7 +228,7 @@ function saveNewUser(req, res, method = null) {
 
 }
 
-function checkUserById(req, res){
+function checkUserById(req, res) {
     let id = req.body.id;
     UserApi.getUserById(id).then((user) => {
         res.json({ 'code': 200, 'user': user })
@@ -287,8 +285,9 @@ function authSocialLogin(req, res) {
         req.body.country = geo.country;
         req.body.name = user.name;
         req.body.email = user.email ? user.email : user.login;
-    
-        saveNewUser(req, res, 'socialLogin');
+        req.body.social = 'socialLogin';
+
+        saveNewUser(req, res);
     })
 }
 

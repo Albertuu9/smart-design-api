@@ -2,27 +2,24 @@ const express = require('express')
 const app = express()
 const platform = require('./app/settings/settings')
 const mongoose = require('mongoose')
-const bodyParser = require('body-parser')
 const cors = require('cors')
 const cookieSession = require('cookie-session')
 const passport = require('passport');
 
 // middlewares
 app.use(express.json())
-
 app.use(cors())
 
 
 app.use(cookieSession({
-  name: 'github-auth-session',
+  name: 'smartdesign',
   keys: ['key1', 'key2']
 }))
 app.use(passport.initialize());
 app.use(passport.session());
 
 app.set('secret', platform.settings.secret);
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+app.use(express.urlencoded({ extended: true }));
 
 // routes
 const loginRoutes = require('./app/routes/login/routes');

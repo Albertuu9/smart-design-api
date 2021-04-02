@@ -8,8 +8,7 @@ const utilDate = require('../../util/utilDate')
 const generic = require('../../shared/generic')
 
 function validateToken(req, res, next) {
-  const token = req.headers['access-token'];
-
+  const token = JSON.parse(req.headers['access-token']);
   if (token) {
     jwt.verify(token, platform.settings.secret, (err, decoded) => {
       if (err) {
@@ -30,6 +29,7 @@ function checkUserExists(req, res, next) {
   if(req.user) {
     email = req.user._json.email ? req.user._json.email : req.user._json.login;
     method = 'socialLogin'
+    req.body.method = method;
   } else {
     email = req.body.email;
   }
@@ -47,9 +47,9 @@ function checkUserExists(req, res, next) {
         }
         if(method) {
           //dev uri
-          // res.redirect(process.env.DEV_URL + '/#/socialLogin?id='+userLogged.id+'&token='+token);
+          res.redirect(process.env.DEV_URL + '/#/socialLogin?id='+userLogged.id+'&token='+token);
           // prod uri
-          res.redirect(process.env.PROD_URL + '/#/socialLogin?id='+userLogged.id+'&token='+token);
+          // res.redirect(process.env.PROD_URL + '/#/socialLogin?id='+userLogged.id+'&token='+token);
         } else {
           res.json({ 'code': 200, message: 'user updated success', user: userLogged.id, token: token });
         }

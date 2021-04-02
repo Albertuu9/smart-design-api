@@ -18,8 +18,8 @@ function sendMail(user, mail, res){
 // Definimos el email
 const mailOptions = {
     from: 'Smartdesign',
-    // to: process.env.MAIL_TEST ? process.env.MAIL_TEST : user.email,
-    to: user.email,
+    to: process.env.MAIL_TEST ? process.env.MAIL_TEST : user.email,
+    // to: user.email,
     subject: mail.subject,
     html: mail.body
 };

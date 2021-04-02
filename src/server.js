@@ -24,11 +24,13 @@ app.use(express.urlencoded({ extended: true }));
 // routes
 const loginRoutes = require('./app/routes/login/routes');
 const avatarRoutes = require('./app/routes/avatar/routes')
+const userRoutes = require('./app/routes/user/routes')
 const utilRoutes = require('./app/routes/util/routes')
 
 app.use('/', loginRoutes)
 app.use('/', utilRoutes)
 app.use('/', avatarRoutes)
+app.use('/', userRoutes)
 
 app.get('/', (req, res) => {
   res.send('<b>Versión: 0.1</b>');

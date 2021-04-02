@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken')
 const platform = require('./../../settings/settings')
 const crypto = require('crypto')
-const generatePassword = require('password-generator');
+const generator = require('generate-password');
 const geoip = require('geoip-lite');
 const axios = require('axios');
 // utils
@@ -162,14 +162,15 @@ function updateUserSettings(user, code, res) {
 }
 
 function saveNewUser(req, res) {
+
     let promises = []
     const name = req.body.name
     const surname = req.body.surname
     const country = req.body.country
     const email = req.body.email
-    const password = req.body.method === 'google' ? generateRandomPassword() : req.body.password
-    const avatar = req.body.method === 'google' ? generateRandomAvatar() : req.body.avatar
-    const userType = req.body.method === 'google' ? 'Particular' : req.body.userType
+    const password = req.body.method === 'socialLogin' ? generateRandomPassword() : req.body.password
+    const avatar = req.body.method === 'socialLogin' ? generateRandomAvatar() : (req.body.avatar ? req.body.avatar : generateRandomAvatar())
+    const userType = req.body.method === 'socialLogin' ? 'Particular' : req.body.userType
     const isPremium = false
     const role = 1;
     const creationDate = utilDate.getCurrentDate()
@@ -180,7 +181,6 @@ function saveNewUser(req, res) {
     promises.push(utilPassword.encryptPassword(password).then((hashedPassword) => {
         cryptedPassword = hashedPassword
     }))
-
 
     Promise.all(promises).then(() => {
         const user = new User({
@@ -214,9 +214,9 @@ function saveNewUser(req, res) {
 
             if (type) {
                 //dev uri
-                // res.redirect(process.env.DEV_URL + '/#/socialLogin?id=' + userLogged.id + '&token=' + token);
+                res.redirect(process.env.DEV_URL + '/#/socialLogin?id=' + userLogged.id + '&token=' + token);
                 // prod uri
-                res.redirect(process.env.PROD_URL + '/#/socialLogin?id='+userLogged.id+'&token='+token);
+                // res.redirect(process.env.PROD_URL + '/#/socialLogin?id='+userLogged.id+'&token='+token);
             } else {
                 res.json({ code: 200, user: userLogged.id, token: token })
             }
@@ -296,7 +296,11 @@ function getIp(req, res) {
 }
 
 function generateRandomPassword() {
-    return generatePassword();
+    let password = generator.generate({
+        length: 10,
+        numbers: true
+    });
+    return password;
 }
 
 module.exports = {

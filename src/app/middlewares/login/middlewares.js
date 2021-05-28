@@ -12,7 +12,7 @@ function validateToken(req, res, next) {
   if (token) {
     jwt.verify(token, platform.settings.secret, (err, decoded) => {
       if (err) {
-        return res.json({ message: 'token not valid' });
+        return res.json({ code: 401, message: 'token not valid' });
       } else {
         req.decoded = decoded;
         next();

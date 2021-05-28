@@ -26,7 +26,7 @@ const userSchema = new Schema({
         required: false
     },
     userType: {
-        type: String,
+        type: Number,
         required: true
     },
     isPremium: {

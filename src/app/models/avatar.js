@@ -13,6 +13,10 @@ const avatarSchema = new Schema({
         type: String,
         required: true
     },
+    category: {
+        type: Number,
+        required: false
+    }, 
     creationDate: {
         type: String,
         required: false

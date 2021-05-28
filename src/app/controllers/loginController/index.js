@@ -79,7 +79,7 @@ function checkCodeExists(req, res) {
 }
 
 function checkMailExists(req, res) {
-    User.find({ email: req.body.email }).then((user) => {
+    UserApi.checkMailExists(req.body.email).then((user) => {
         if (user && user.length > 0) {
             let payload = {
                 id: user[0]._id,
@@ -98,7 +98,7 @@ function checkTokenIsValid(req, res) {
     if (token) {
         jwt.verify(token, platform.settings.secret, (err, decoded) => {
             if (err) {
-                res.json({ code: 400, message: 'token not valid' });
+                res.json({ code: 401, message: 'token not valid' });
             } else {
                 req.decoded = decoded;
                 res.json({ code: 200, decoded: decoded });
@@ -170,7 +170,7 @@ function saveNewUser(req, res) {
     const email = req.body.email
     const password = req.body.method === 'socialLogin' ? generateRandomPassword() : req.body.password
     const avatar = req.body.method === 'socialLogin' ? generateRandomAvatar() : (req.body.avatar ? req.body.avatar : generateRandomAvatar())
-    const userType = req.body.method === 'socialLogin' ? 'Particular' : req.body.userType
+    const userType = req.body.method === 'socialLogin' ? 1 : req.body.userType
     const isPremium = false
     const role = 1;
     const creationDate = utilDate.getCurrentDate()
@@ -222,7 +222,7 @@ function saveNewUser(req, res) {
             }
 
         }).catch((error) => {
-            res.json({ code: 400, message: error })
+            res.json({ code: 500, message: error })
         })
     })
 
@@ -252,14 +252,25 @@ function generateCode() {
 }
 
 function generateRandomAvatar() {
-    let avatars = ['https://i.ibb.co/fQWWKmt/guest1.png',
-        'https://i.ibb.co/bX6RRts/guest2.png',
-        'https://i.ibb.co/DVCzFyR/guest3.png',
-        'https://i.ibb.co/svSXp9K/guest4.png',
-        'https://i.ibb.co/ww8dQqQ/guest5.png',
-        'https://i.ibb.co/XxMyTMm/guest6.png',
-        'https://i.ibb.co/Gkf0xT9/guest7.png',
-        'https://i.ibb.co/5FcJQ21/guest8.png']
+    let avatars = ['https://i.ibb.co/G0RC1TV/clown.png',
+        'https://i.ibb.co/mv6vprc/evil.png',
+        'https://i.ibb.co/svfjRRc/gas-mask.png',
+        'https://i.ibb.co/j4tKm2m/girl.png',
+        'https://i.ibb.co/tPfM6bH/monster.png',
+        'https://i.ibb.co/MG7shfv/pumpkin.png',
+        'https://i.ibb.co/SdjXw20/scream.png',
+        'https://i.ibb.co/C2f743z/serial-killer.png',
+        'https://i.ibb.co/qjDCpKq/vampire.png',
+        'https://i.ibb.co/711h9Xm/monster-2.png',
+        'https://i.ibb.co/Gnd0hxY/monster-4.png',
+        'https://i.ibb.co/jkVjHjg/monster-6.png',
+        'https://i.ibb.co/rwpZdbw/monster-9.png',
+        'https://i.ibb.co/mFrpLW5/monster-10.png',
+        'https://i.ibb.co/fpMKH3p/monster-12.png',
+        'https://i.ibb.co/h7nkfFr/monster-14.png',
+        'https://i.ibb.co/XJByRPW/cyclops.png',
+        'https://i.ibb.co/TmVwkCt/monster-16.png']
+        
     let random = Math.floor(Math.random() * (avatars.length - 0));
     return avatars[random];
 
@@ -295,6 +306,17 @@ function getIp(req, res) {
     return axios.get('https://api.ipify.org/?format=json')
 }
 
+function getUserIp(req, res){
+    return axios.get('https://api.ipify.org/?format=json').then((response) => {
+        if(response) {
+            res.json({ code: 200, ip: response.data.ip })
+        } else {
+            res.json({ code: 500 })
+        }
+        
+    })
+}
+
 function generateRandomPassword() {
     let password = generator.generate({
         length: 10,
@@ -317,5 +339,6 @@ module.exports = {
     getError,
     authSocialLogin,
     getIp,
-    checkUserById
+    checkUserById,
+    getUserIp
 }

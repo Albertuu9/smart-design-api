@@ -32,6 +32,8 @@ module.exports = (function() {
 
     loginRoutes.get('/getIp', loginController.getIp);
 
+    loginRoutes.post('/getUserIp', loginController.getUserIp);
+
     loginRoutes.post('/checkUserById', loginController.checkUserById);
 
     loginRoutes.post('/auth/error', loginController.getError);

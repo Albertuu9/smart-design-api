@@ -9,5 +9,7 @@ module.exports = (function() {
 
     userRoutes.post('/getUserDataById', loginMiddlewares.validateToken, usersController.getUserById);
 
+    userRoutes.post('/updateUserInfo', loginMiddlewares.validateToken, usersController.updateUserInfo);
+
     return userRoutes;
 })();

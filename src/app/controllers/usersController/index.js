@@ -18,7 +18,15 @@ function updateUserInfo(req, res){
         if(user && user[0]._id.toString() !== req.body.id){
             res.json({ 'code': 409, 'message': 'email exists' })
         } else {
-            User.findByIdAndUpdate(req.body.id, { 'name': req.body.name, 'surname': req.body.surname, 'email': req.body.email, 'country': req.body.country, 'userType': req.body.userType, 'lastUpdate': utilDate.getCurrentDate() }, ((error, result) => {
+            let updateUserObject = {
+                name: req.body.name,
+                surname: req.body.surname,
+                email: req.body.email,
+                country: req.body.country,
+                userType: req.body.userType,
+                lastUpdate: utilDate.getCurrentDate()
+            }
+            UserApi.updateById(req.body.id, updateUserObject, ((error, result) => {
                 if (error) {
                     res.json({ 'code': 500 });
                 } else {
@@ -29,10 +37,28 @@ function updateUserInfo(req, res){
                         res.json({ 'code': 500, 'message': error })
                     });
                 }
-        
-            }))
+            }));
         }
     })
 }
 
-module.exports = { getUserById, updateUserInfo }
+function updateUserAvatar(req, res){
+    let updateObject = {
+        avatar: req.body.avatar,
+        lastUpdate: utilDate.getCurrentDate()
+    }
+    UserApi.updateById(req.body.id, updateObject, ((error, result) => {
+        if (error) {
+            res.json({ 'code': 500 });
+        } else {
+            // obtenemos el usuario actualizado
+            UserApi.getUserById(req.body.id).then((user) => {
+                res.json({ 'code': 200, 'user': user })
+            }).catch((error) => {
+                res.json({ 'code': 500, 'message': error })
+            });
+        }
+    }));
+}
+
+module.exports = { getUserById, updateUserInfo, updateUserAvatar }

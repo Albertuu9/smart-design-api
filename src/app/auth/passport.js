@@ -22,12 +22,12 @@ function(accessToken, refreshToken, profile, done) {
 ));
 // google login
 passport.use(new GoogleStrategy({
-  clientID: process.env.DEV_GOOGLE_CLIENT_ID,
-  clientSecret: process.env.DEV_GOOGLE_CLIENT_SECRET,
-  callbackURL: process.env.DEV_GOOGLE_CALLBACK_URL
-    // clientID: process.env.PROD_GOOGLE_CLIENT_ID,
-    // clientSecret: process.env.PROD_GOOGLE_CLIENT_SECRET,
-    // callbackURL: process.env.PROD_GOOGLE_CALLBACK_URL
+  // clientID: process.env.DEV_GOOGLE_CLIENT_ID,
+  // clientSecret: process.env.DEV_GOOGLE_CLIENT_SECRET,
+  // callbackURL: process.env.DEV_GOOGLE_CALLBACK_URL
+    clientID: process.env.PROD_GOOGLE_CLIENT_ID,
+    clientSecret: process.env.PROD_GOOGLE_CLIENT_SECRET,
+    callbackURL: process.env.PROD_GOOGLE_CALLBACK_URL
 },
 function(accessToken, refreshToken, profile, done) {
     return done(null, profile);

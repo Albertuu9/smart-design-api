@@ -58,13 +58,13 @@ function loginGuest(req, res) {
         _id: hash,
         name: 'Invitado',
         isPremium: false,
-        avatar: generateRandomAvatar()
+        avatar: generateRandomAvatar(),
+        isGuest: true
     }
     res.json({ 'code': 200, token: token, user: user })
 }
 
 function checkCodeExists(req, res) {
-    console.log('req', req.body);
     User.find({ _id: req.body.id }).then((user) => {
         if (user && user.length > 0) {
             if (parseInt(req.body.code) === user[0].settings.verificationCode) {
@@ -214,9 +214,9 @@ function saveNewUser(req, res) {
 
             if (type) {
                 //dev uri
-                res.redirect(process.env.DEV_URL + '/#/socialLogin?id=' + userLogged.id + '&token=' + token);
+                // res.redirect(process.env.DEV_URL + '/#/socialLogin?id=' + userLogged.id + '&token=' + token);
                 // prod uri
-                // res.redirect(process.env.PROD_URL + '/#/socialLogin?id='+userLogged.id+'&token='+token);
+                res.redirect(process.env.PROD_URL + '/#/socialLogin?id='+userLogged.id+'&token='+token);
             } else {
                 res.json({ code: 200, user: userLogged.id, token: token })
             }
@@ -239,6 +239,7 @@ function checkUserById(req, res) {
 
 function getUserCountryByIp(req, res) {
     let geo = geoip.lookup(req.body.ip)
+    console.log('geo', geo);
     if (geo) {
         res.json({ code: 200, data: geo })
     } else {

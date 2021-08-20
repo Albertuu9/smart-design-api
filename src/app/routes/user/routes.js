@@ -11,5 +11,7 @@ module.exports = (function() {
 
     userRoutes.post('/updateUserInfo', loginMiddlewares.validateToken, usersController.updateUserInfo);
 
+    userRoutes.post('/updateAvatar', loginMiddlewares.validateToken, usersController.updateUserAvatar);
+
     return userRoutes;
 })();

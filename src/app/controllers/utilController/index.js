@@ -1,11 +1,12 @@
 const axios = require('axios');
 
 function getCountries(req, res){
-    return axios.get('https://restcountries.eu/rest/v2/all').then((response) => {
+    return axios.get('https://flagcdn.com/es/codes.json').then((response) => {
         if(response) {
             let countries = [];
-            response.data.forEach((element, index) => {
-                countries[index] = {name: element.name, alpha2Code: element.alpha2Code, flag: element.flag}
+            Object.keys(response.data).forEach(key => {
+                console.log(response.data[key]);
+                countries.push({name: response.data[key], alpha2Code: key, flag: 'https://flagcdn.com/32x24/'+key+'.png'});
             });
             res.json({code: 200, data: countries});
         } else {

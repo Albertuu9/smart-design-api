@@ -26,6 +26,7 @@ function validateToken(req, res, next) {
 function checkUserExists(req, res, next) {
   let email = '';
   let method = null;
+  console.log('req',req.user);
   if(req.user) {
     email = req.user._json.email ? req.user._json.email : req.user._json.login;
     method = 'socialLogin'
@@ -47,9 +48,9 @@ function checkUserExists(req, res, next) {
         }
         if(method) {
           //dev uri
-          // res.redirect(process.env.DEV_URL + '/#/socialLogin?id='+userLogged.id+'&token='+token);
+          res.redirect(process.env.DEV_URL + '/#/socialLogin?id='+userLogged.id+'&token='+token);
           // prod uri
-          res.redirect(process.env.PROD_URL + '/#/socialLogin?id='+userLogged.id+'&token='+token);
+          // res.redirect(process.env.PROD_URL + '/#/socialLogin?id='+userLogged.id+'&token='+token);
         } else {
           res.json({ 'code': 200, message: 'user updated success', user: userLogged.id, token: token });
         }
